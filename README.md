@@ -5,9 +5,10 @@
 
 
 Версия 0.2 (puntoswitch, я уже рядом)
- 1) https://norvig.com/mayzner.html скачивает Y-грамм.
+ 1) https://norvig.com/mayzner.html скачивает N-грамм.
  2) Генерируем headers: python gen6.py input.txt ngram_stats.h
- 3) Сборка пакета: gcc 2.c -o 2 -lm 
+ 3) Сборка пакета: gcc 2.c -o 2 -lm
+ 4) ...ищем N-грамм для русских букв. Тут все туго.
  
 
 
