@@ -2,6 +2,17 @@
 
 Автоматическая смена раскладки,если вы вводите текст и забыли сменить русский на английский или наоборот.
 Первым делом настроем X11, а точнее обработку клавиатуры:
+
+
+Версия 0.2 (puntoswitch, я уже рядом)
+ 1) https://norvig.com/mayzner.html скачивает Y-грамм.
+ 2) Генерируем headers: python gen6.py input.txt ngram_stats.h
+ 3) Сборка пакета: gcc 2.c -o 2 -lm 
+ 
+
+
+Версия 0.1
+
 ```
 sudo cat /proc/bus/input/devices | grep -A5 "keyboard"
 sudo chmod a+r /dev/input/event*
