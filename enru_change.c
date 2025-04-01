@@ -9,13 +9,14 @@
 #include <math.h>
 #include <float.h>
 #include <string.h>
+#include "/usr/include/X11/keysymdef.h"
 
 
 #include "ngram_stats_ru.h"
 #include "ngram_stats_en.h"
 
 #define BUFFER_SIZE 5
-#define KEYBOARD_DEV "/dev/input/event4"
+#define KEYBOARD_DEV "/dev/input/event3"
 #define MAX_NGRAM_LENGTH 5
 
 
@@ -115,6 +116,32 @@ static struct {
     {L'ь', XK_Cyrillic_softsign}, {L'Ь',XK_Cyrillic_SOFTSIGN},
     {L'б', XK_Cyrillic_be}, {L'Б',XK_Cyrillic_BE},
     {L'ю', XK_Cyrillic_yu}, {L'Ю',XK_Cyrillic_YU},
+    {L'q', XK_Cyrillic_shorti}, {L'Q', XK_Cyrillic_SHORTI},
+    {L'W', XK_Cyrillic_tse}, {L'W',XK_Cyrillic_TSE},
+    {L'e', XK_Cyrillic_u}, {L'E',XK_Cyrillic_U},
+    {L'r', XK_Cyrillic_ka}, {L'R',XK_Cyrillic_KA},
+    {L't', XK_Cyrillic_ie}, {L'T',XK_Cyrillic_IE},
+    {L'y', XK_Cyrillic_en}, {L'Y',XK_Cyrillic_EN},
+    {L'u', XK_Cyrillic_ghe}, {L'U',XK_Cyrillic_GHE},
+    {L'i', XK_Cyrillic_sha}, {L'I',XK_Cyrillic_SHA},
+    {L'o', XK_Cyrillic_shcha}, {L'O',XK_Cyrillic_SHCHA},
+    {L'p', XK_Cyrillic_ze}, {L'P',XK_Cyrillic_ZE},
+    {L'a', XK_Cyrillic_ef}, {L'A',XK_Cyrillic_EF},
+    {L's', XK_Cyrillic_yeru}, {L'S',XK_Cyrillic_yeru},
+    {L'd', XK_Cyrillic_ve}, {L'D',XK_Cyrillic_VE},
+    {L'f', XK_Cyrillic_a}, {L'F',XK_Cyrillic_A},
+    {L'g', XK_Cyrillic_pe}, {L'G',XK_Cyrillic_PE},
+    {L'h', XK_Cyrillic_er}, {L'H',XK_Cyrillic_ER},
+    {L'j', XK_Cyrillic_o}, {L'J',XK_Cyrillic_O},
+    {L'k', XK_Cyrillic_el}, {L'K',XK_Cyrillic_EL},
+    {L'l', XK_Cyrillic_de}, {L'L',XK_Cyrillic_DE},
+    {L'z', XK_Cyrillic_ya}, {L'Z',XK_Cyrillic_YA},
+    {L'x', XK_Cyrillic_che}, {L'X',XK_Cyrillic_CHE},
+    {L'c', XK_Cyrillic_es}, {L'C',XK_Cyrillic_ES},
+    {L'v', XK_Cyrillic_em}, {L'V',XK_Cyrillic_EM},
+    {L'b', XK_Cyrillic_i}, {L'B',XK_Cyrillic_I},
+    {L'n', XK_Cyrillic_te}, {L'N',XK_Cyrillic_TE},
+    {L'm', XK_Cyrillic_softsign}, {L'M',XK_Cyrillic_SOFTSIGN},
     {0, 0} // Терминатор
 };
 
@@ -396,6 +423,10 @@ void* loops() {
 int main(int argc, char **argv) {
     setlocale(LC_ALL, "ru_RU.UTF-8");
     xdisplay = XOpenDisplay(NULL);
+    if(!xdisplay) {
+        fprintf(stderr, "Error opening X display\n");
+        return 1;
+    }
     
     gtk_init(&argc, &argv);
     /*AppIndicator *indicator = app_indicator_new(
