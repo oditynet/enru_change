@@ -77,7 +77,8 @@ KeyMap key_layout[] = {
     {KEY_B,    L'b', L'B', L'и', L'И'}, 
     {KEY_N,    L'n', L'N', L'т', L'Т'},
     {KEY_M,    L'm', L'M', L'ь', L'Ь'},
-    {KEY_SEMICOLON,  L';', L':', L'ж', L'Ж'},    // ;
+    {KEY_SEMICOLON,  L';', L':', L'ж', L'Ж'},    // ;\
+    {KEY_APOSTROPHE, L'\'', L'\"', L'э', L'Э'}, 
     {KEY_LEFTBRACE,  L'[', L'{', L'х', L'Х'},    // [
     {KEY_BACKSLASH,  L'\\', L'|', L'ъ', L'Ъ'},  // \
     {KEY_GRAVE,      L'`', L'~', L'ё', L'Ё'},    // ~
