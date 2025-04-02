@@ -9,15 +9,16 @@
 #include <math.h>
 #include <float.h>
 #include <string.h>
-#include "/usr/include/X11/keysymdef.h"
+//#include "/usr/include/X11/keysymdef.h"
+#include <stdbool.h>
 
 
 #include "ngram_stats_ru.h"
 #include "ngram_stats_en.h"
 
-#define BUFFER_SIZE 5
-#define KEYBOARD_DEV "/dev/input/event3"
-#define MAX_NGRAM_LENGTH 5
+#define BUFFER_SIZE 4
+#define KEYBOARD_DEV "/dev/input/event4"
+#define MAX_NGRAM_LENGTH 4
 
 
 #include <gtk/gtk.h>
@@ -50,35 +51,41 @@ typedef struct {
 } KeyMap;
 
 KeyMap key_layout[] = {
-    {KEY_Q, L'q', L'Q', L'й', L'Й'},
-    {KEY_W, L'w', L'W', L'ц', L'Ц'},
-    {KEY_E, L'e', L'E', L'у', L'У'},
-    {KEY_R, L'r', L'R', L'к', L'К'},
-    {KEY_T, L't', L'T', L'е', L'Е'},
-    {KEY_Y, L'y', L'Y', L'н', L'Н'},
-    {KEY_U, L'u', L'U', L'г', L'Г'},
-    {KEY_I, L'i', L'I', L'ш', L'Ш'},
-    {KEY_O, L'o', L'O', L'щ', L'Щ'},
-    {KEY_P, L'p', L'P', L'з', L'З'},
-    {KEY_A, L'a', L'A', L'ф', L'Ф'},
-    {KEY_S, L's', L'S', L'ы', L'Ы'},
-    {KEY_D, L'd', L'D', L'в', L'В'},
-    {KEY_F, L'f', L'F', L'а', L'А'},
-    {KEY_G, L'g', L'G', L'п', L'П'},
-    {KEY_H, L'h', L'H', L'р', L'Р'},
-    {KEY_J, L'j', L'J', L'о', L'О'},
-    {KEY_K, L'k', L'K', L'л', L'Л'},
-    {KEY_L, L'l', L'L', L'д', L'Д'},
-    {KEY_Z, L'z', L'Z', L'я', L'Я'},
-    {KEY_X, L'x', L'X', L'ч', L'Ч'},
-    {KEY_C, L'c', L'C', L'с', L'С'},
-    {KEY_V, L'v', L'V', L'м', L'М'},
-    {KEY_B, L'b', L'B', L'и', L'И'},
-    {KEY_N, L'n', L'N', L'т', L'Т'},
-    {KEY_M, L'm', L'M', L'ь', L'Ь'},
-    {0}
+    {KEY_Q,    L'q', L'Q', L'й', L'Й'},
+    {KEY_W,    L'w', L'W', L'ц', L'Ц'},
+    {KEY_E,    L'e', L'E', L'у', L'У'},
+    {KEY_R,    L'r', L'R', L'к', L'К'},
+    {KEY_T,    L't', L'T', L'е', L'Е'},
+    {KEY_Y,    L'y', L'Y', L'н', L'Н'},
+    {KEY_U,    L'u', L'U', L'г', L'Г'},
+    {KEY_I,    L'i', L'I', L'ш', L'Ш'},
+    {KEY_O,    L'o', L'O', L'щ', L'Щ'},
+    {KEY_P,    L'p', L'P', L'з', L'З'},
+    {KEY_A,    L'a', L'A', L'ф', L'Ф'},
+    {KEY_S,    L's', L'S', L'ы', L'Ы'},
+    {KEY_D,    L'd', L'D', L'в', L'В'},
+    {KEY_F,    L'f', L'F', L'а', L'А'},
+    {KEY_G,    L'g', L'G', L'п', L'П'},
+    {KEY_H,    L'h', L'H', L'р', L'Р'},
+    {KEY_J,    L'j', L'J', L'о', L'О'},
+    {KEY_K,    L'k', L'K', L'л', L'Л'},
+    {KEY_L,    L'l', L'L', L'д', L'Д'},
+    {KEY_Z,    L'z', L'Z', L'я', L'Я'},
+    {KEY_X,    L'x', L'X', L'ч', L'Ч'},
+    {KEY_C,    L'c', L'C', L'с', L'С'},
+    {KEY_V,    L'v', L'V', L'м', L'М'},
+    {KEY_B,    L'b', L'B', L'и', L'И'}, 
+    {KEY_N,    L'n', L'N', L'т', L'Т'},
+    {KEY_M,    L'm', L'M', L'ь', L'Ь'},
+    {KEY_SEMICOLON,  L';', L':', L'ж', L'Ж'},    // ;
+    {KEY_LEFTBRACE,  L'[', L'{', L'х', L'Х'},    // [
+    {KEY_BACKSLASH,  L'\\', L'|', L'ъ', L'Ъ'},  // \
+    {KEY_GRAVE,      L'`', L'~', L'ё', L'Ё'},    // ~
+    {KEY_PERIOD,     L'.', L'>', L'ю', L'Ю'},    // .
+    {KEY_COMMA,      L',', L'<', L'б', L'Б'},    // ,
+    
+    {0}  // Терминатор
 };
-
 static struct {
     wchar_t wc;
     KeySym keysym;
@@ -226,6 +233,7 @@ void process_keystroke(int code) {
     
     for (KeyMap *p = key_layout; p->keycode; p++) {
         if (p->keycode == code) {
+            wprintf(L"[F+]: %d\n", code);
             en_char = shift_pressed ? p->upper_en : p->lower_en;
             ru_char = shift_pressed ? p->upper_ru : p->lower_ru;
             break;
@@ -267,9 +275,14 @@ void send_backspaces(int count) {
 //        printf("del\n");
         XTestFakeKeyEvent(xdisplay, backspace, True, CurrentTime);
         XTestFakeKeyEvent(xdisplay, backspace, False, CurrentTime);
-        XFlush(xdisplay);
-        usleep(1000);
+    //    XFlush(xdisplay);
+        usleep(50000);
     }
+}
+
+bool is_en(wchar_t ch)
+{
+    return (ch >= L'A' && ch <= L'Z') || (ch >= L'a' && ch <= L'z');
 }
 
 void send_string(const wchar_t *str) {
@@ -288,8 +301,15 @@ void send_string(const wchar_t *str) {
 	    }
 	}
 
-
-	KeyCode code = XKeysymToKeycode(xdisplay, sym);
+    KeyCode code;
+    if (0 != is_en(*p)){
+       char wc[6];
+       int l=wctomb(wc,*p);
+       code = XKeysymToKeycode(xdisplay, XStringToKeysym(wc));
+    }
+    else
+       code = XKeysymToKeycode(xdisplay, sym);
+	//KeyCode code = XKeysymToKeycode(xdisplay, sym);
 	if(code == 0) {
 	    fprintf(stderr, "Не найден KeyCode для символа: %lc\n", *p);
 	    continue;
@@ -307,29 +327,30 @@ void send_string(const wchar_t *str) {
 	//    XTestFakeKeyEvent(xdisplay, shift_code, False, CurrentTime);
 	//}
 
-	XFlush(xdisplay);
-	usleep(10000); // Задержка для стабильности
+	//XFlush(xdisplay);
+	usleep(50000); // Задержка для стабильности
     }
+    XFlush(xdisplay);
 }
 
 void print_results() {
-    wprintf(L"\nТекущий буфер EN: %ls", ctx.en_buffer);
-    wprintf(L"\nТекущий буфер RU: %ls", ctx.ru_buffer);
-    wprintf(L"\nВероятность EN: %.4f%%", ctx.current_prob_en);
-    wprintf(L"\nВероятность RU: %.4f%%", ctx.current_prob_ru);
+    wprintf(L"Текущий буфер EN: %ls \n", ctx.en_buffer);
+    wprintf(L"Текущий буфер RU: %ls \n", ctx.ru_buffer);
+    wprintf(L"Вероятность EN: %.4f%% \n", ctx.current_prob_en);
+    wprintf(L"Вероятность RU: %.4f%% \n", ctx.current_prob_ru);
     
     const double threshold = 0.002;
     if (fabs(ctx.current_prob_en - ctx.current_prob_ru) < threshold) {
-        wprintf(L"\nРезультат: неопределённый");
+        wprintf(L"Результат: неопределённый\n");
     } else if (ctx.current_prob_en > ctx.current_prob_ru) {
-        wprintf(L"\nРезультат: английский");
+        wprintf(L"Результат: английский\n");
         if (strcmp(current_layout, "us") == 0)
     	    return;
         change_layout("us");
         send_backspaces(wcslen(ctx.ru_buffer));
         send_string(ctx.en_buffer);
     } else {
-        wprintf(L"\nРезультат: русский");
+        wprintf(L"Результат: русский\n");
         if (strcmp(current_layout, "ru") == 0)
     	    return;
         
@@ -382,10 +403,16 @@ void* loops() {
                     shift_pressed = 0;
                 }
             } else if (ev.value == 1) { // Press
+                wprintf(L"[!]Press: %d\n", ev.code);
                 switch (ev.code) {
+                    case KEY_BACKSPACE:
+                	can--;
+                	ctx.length--;
+                	break;
                     case KEY_SPACE:
                     case KEY_ENTER:
-                        print_results();
+                        if (can <= MAX_NGRAM_LENGTH)
+                            print_results();
                         memset(&ctx, 0, sizeof(InputContext));
                         can=0;
                         break;
@@ -402,6 +429,10 @@ void* loops() {
                 	{
                 	    //wprintf(L"Press: %d %d", can, ev.code);
                     	    process_keystroke(ev.code);
+                    	}
+                    	else if (can == MAX_NGRAM_LENGTH)
+                    	{
+                    	    print_results();
                     	}
                 	can++;
                 	break;
