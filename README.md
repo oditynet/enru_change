@@ -10,7 +10,15 @@
 python genru3.py book-ru/* > ngram_stats_ru.h
 python genen3.py book-en/* > ngram_stats_en.h
 ```
- 4) Сборка пакета: gcc enru_change.c -o enru_change $(pkg-config --cflags --libs gtk+-3.0 appindicator3-0.1) -lX11 -lXtst -lpthread
+ 4) Настройке вручную в коде адрес вашей клавиатуры/ event4 заменить на ваш. Найти путь можно командой:
+```
+sudo cat /proc/bus/input/devices | grep -A5 -i "Keyboard"
+```
+И установить бить чтения
+```
+sudo chmod a+r /dev/input/event*
+```
+ 6) Сборка пакета: gcc enru_change.c -o enru_change $(pkg-config --cflags --libs gtk+-3.0 appindicator3-0.1) -lX11 -lXtst -lpthread
 
 Реализовано:
 1) смена раскладки en\ru
