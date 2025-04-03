@@ -17,7 +17,7 @@
 #include "ngram_stats_en.h"
 
 #define BUFFER_SIZE 4
-#define KEYBOARD_DEV "/dev/input/event4"
+#define KEYBOARD_DEV "/dev/input/event3"
 #define MAX_NGRAM_LENGTH 4
 
 
@@ -51,6 +51,7 @@ typedef struct {
 } KeyMap;
 
 KeyMap key_layout[] = {
+    {KEY_GRAVE,L'`', L'~', L'ё', L'Ё'},
     {KEY_Q,    L'q', L'Q', L'й', L'Й'},
     {KEY_W,    L'w', L'W', L'ц', L'Ц'},
     {KEY_E,    L'e', L'E', L'у', L'У'},
@@ -61,6 +62,8 @@ KeyMap key_layout[] = {
     {KEY_I,    L'i', L'I', L'ш', L'Ш'},
     {KEY_O,    L'o', L'O', L'щ', L'Щ'},
     {KEY_P,    L'p', L'P', L'з', L'З'},
+    {KEY_LEFTBRACE,  L'[', L'{', L'х', L'Х'},
+    {KEY_RIGHTBRACE,  L']', L'}', L'ъ', L'Ъ'},
     {KEY_A,    L'a', L'A', L'ф', L'Ф'},
     {KEY_S,    L's', L'S', L'ы', L'Ы'},
     {KEY_D,    L'd', L'D', L'в', L'В'},
@@ -70,6 +73,9 @@ KeyMap key_layout[] = {
     {KEY_J,    L'j', L'J', L'о', L'О'},
     {KEY_K,    L'k', L'K', L'л', L'Л'},
     {KEY_L,    L'l', L'L', L'д', L'Д'},
+    {KEY_SEMICOLON,  L';', L':', L'ж', L'Ж'},    // ;\
+    {KEY_APOSTROPHE, L'\'', L'\"', L'э', L'Э'},  // ' (апостроф)
+    {40, L'\'', L'\"', L'э', L'Э'}, 
     {KEY_Z,    L'z', L'Z', L'я', L'Я'},
     {KEY_X,    L'x', L'X', L'ч', L'Ч'},
     {KEY_C,    L'c', L'C', L'с', L'С'},
@@ -77,15 +83,9 @@ KeyMap key_layout[] = {
     {KEY_B,    L'b', L'B', L'и', L'И'}, 
     {KEY_N,    L'n', L'N', L'т', L'Т'},
     {KEY_M,    L'm', L'M', L'ь', L'Ь'},
-    {KEY_SEMICOLON,  L';', L':', L'ж', L'Ж'},    // ;\
-    {KEY_APOSTROPHE, L'\'', L'\"', L'э', L'Э'}, 
-    {KEY_LEFTBRACE,  L'[', L'{', L'х', L'Х'},    // [
-    {KEY_BACKSLASH,  L'\\', L'|', L'ъ', L'Ъ'},  // \
-    {KEY_GRAVE,      L'`', L'~', L'ё', L'Ё'},    // ~
-    {KEY_PERIOD,     L'.', L'>', L'ю', L'Ю'},    // .
-    {KEY_COMMA,      L',', L'<', L'б', L'Б'},    // ,
-    
-    {0}  // Терминатор
+    {KEY_COMMA,      L',', L'<', L'б', L'Б'},
+    {KEY_DOT,     L'.', L'>', L'ю', L'Ю'},
+    {0} 
 };
 static struct {
     wchar_t wc;
@@ -169,7 +169,7 @@ double min_prob_ru = 0.0001;
 static Display *xdisplay = NULL;
 
 static char current_layout[3] = "us";
-
+bool nochange=0, off1=0, off2=0;
 void init_min_probs() {
     double min_en = DBL_MAX;
     for (size_t i = 0; i < sizeof(ngram_stats_en)/sizeof(NGramStat_en); i++) {
@@ -233,6 +233,7 @@ void process_keystroke(int code) {
     wchar_t ru_char = L'\0';
     
     for (KeyMap *p = key_layout; p->keycode; p++) {
+        //wprintf(L"[F+]:%d  %d\n", p->keycode,code);
         if (p->keycode == code) {
             wprintf(L"[F+]: %d\n", code);
             en_char = shift_pressed ? p->upper_en : p->lower_en;
@@ -340,6 +341,10 @@ void print_results() {
     wprintf(L"Вероятность EN: %.4f%% \n", ctx.current_prob_en);
     wprintf(L"Вероятность RU: %.4f%% \n", ctx.current_prob_ru);
     
+    if(off1 == 1 && off2 == 1)
+	return;
+
+    
     const double threshold = 0.002;
     if (fabs(ctx.current_prob_en - ctx.current_prob_ru) < threshold) {
         wprintf(L"Результат: неопределённый\n");
@@ -368,9 +373,9 @@ GtkMenu* create_tray_menu(AppIndicator *indicator) {
     GtkWidget *en = gtk_menu_item_new_with_label("English");
     GtkWidget *quit = gtk_menu_item_new_with_label("Выход");
 
-    g_signal_connect(ru, "activate",
+    g_signal_connect(ru, "activate", 
         G_CALLBACK(change_layout), "ru");
-    g_signal_connect(en, "activate",
+    g_signal_connect(en, "activate", 
         G_CALLBACK(change_layout), "us");
     g_signal_connect(quit, "activate", G_CALLBACK(gtk_main_quit), NULL);
 
@@ -380,8 +385,7 @@ GtkMenu* create_tray_menu(AppIndicator *indicator) {
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), quit);
 
     gtk_widget_show_all(GTK_WIDGET(menu));
-    return menu;
-}
+    return menu;}
 
 void* loops() {
     init_min_probs();
@@ -416,6 +420,16 @@ void* loops() {
                             print_results();
                         memset(&ctx, 0, sizeof(InputContext));
                         can=0;
+                        nochange=0;
+                        break;
+                    case KEY_RIGHTALT:
+                        wprintf(L"[+]Press Ralt\n");
+                        off1 = off1 ? 0 : 1;
+                        break;
+                    case KEY_LEFTALT:
+                        wprintf(L"[+]Press Lalt\n");
+                        nochange = 1; //can enter stronge string,for example a password
+                        off2 = off2 ? 0 : 1;
                         break;
                     case KEY_LEFTSHIFT:
                         shift_pressed = 1;
@@ -431,7 +445,7 @@ void* loops() {
                 	    //wprintf(L"Press: %d %d", can, ev.code);
                     	    process_keystroke(ev.code);
                     	}
-                    	else if (can == MAX_NGRAM_LENGTH)
+                    	else if (can == MAX_NGRAM_LENGTH && nochange == 0)
                     	{
                     	    print_results();
                     	}
@@ -460,15 +474,15 @@ int main(int argc, char **argv) {
         return 1;
     }
     
-    gtk_init(&argc, &argv);
-    /*AppIndicator *indicator = app_indicator_new(
+/*    gtk_init(&argc, &argv);
+    AppIndicator *indicator = app_indicator_new(
         "smart-kb", "input-keyboard",
         APP_INDICATOR_CATEGORY_APPLICATION_STATUS
     );
 
     app_indicator_set_menu(indicator, create_tray_menu(indicator));
     app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
-    */
+*/    
     pthread_t thread;
     pthread_create(&thread, NULL, loops,NULL);
 
