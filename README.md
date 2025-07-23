@@ -1,36 +1,36 @@
 # enru_change
 
-Автоматическая смена раскладки,если вы вводите текст и забыли сменить русский на английский или наоборот.
-Первым делом настроем X11, а точнее обработку клавиатуры:
+Automatic layout change if you enter text and forget to change Russian to English or vice versa.
+First of all, let's configure X11, or rather keyboard processing:
 
- 1) https://norvig.com/mayzner.html скачивает N-грамм.
- 2) Так как для русского языка я не нашел N-граммы, то будем обучать сами. Скачивайте порядка 20-30 книг на русском и на английском языках.
- 3) генерируем частоты. У меня настроена программа и скрипт на на первые 5 символов (5-грамм) (Если лень, то с репозитории они лежат. xz -d ngram_stats_en.h.xz - чтобы распаковать)
+1) https://norvig.com/mayzner.html downloads N-gram.
+2) Since I did not find an N-gram for the Russian language, we will teach ourselves. Download about 20-30 books in Russian and English.
+3) generate frequencies. I have a program and a script configured for the first 5 characters (5-gram) (If you are lazy, they are in the repository. xz -d ngram_stats_en.h.xz - to unpack)
 ```
 python genru3.py book-ru/* > ngram_stats_ru.h
 python genen3.py book-en/* > ngram_stats_en.h
 ```
- 4) Настройке вручную в коде адрес вашей клавиатуры/ event4 заменить на ваш. Найти путь можно командой:
+4) Manual configuration in the code, replace the address of your keyboard/event4 with yours. You can find the path with the command:
 ```
 sudo cat /proc/bus/input/devices | grep -A5 -i "Keyboard"
 ```
-И установить бить чтения
+And set the read beat
 ```
 sudo chmod a+r /dev/input/event*
 ```
- 6) Сборка пакета: gcc enru_change.c -o enru_change $(pkg-config --cflags --libs gtk+-3.0 appindicator3-0.1) -lX11 -lXtst -lpthread
+6) Package build: gcc enru_change.c -o enru_change $(pkg-config --cflags --libs gtk+-3.0 appindicator3-0.1) -lX11 -lXtst -lpthread
 
-Реализовано:
-1) смена раскладки en\ru
-2) замена введеных неправильных символов
-3) нажать правый Alt то следующее слово будет введено безавтозамены \ Если нажать Правый и левый Альт, то до отмены той же комбинацией автозамена отключается.
+Implemented:
+1) change the layout en\ru
+2) replace entered incorrect characters
+3) press the right Alt then the next word will be entered without auto-replacement \ If you press the Right and Left Alt, then until canceled by the same combination, auto-replacement is disabled.
 
 Result:
-Первая строка - ъочу ввести эту строку
-Вторая строка - как отработала программа
+First line - I want to enter this line
+Second line - how the program worked
 ```
-(Вводил)     Z хотел ...
-(результат) я хотел написать этот текст с правильной раскладкой
+(Entered) Z wanted ...
+(result) I wanted to write this text with the correct layout
 ```
 
-Да, не идеал, но работаем над алгоритмом и обучением модели
+Yes, it is not ideal, but we are working on the algorithm and training the model
