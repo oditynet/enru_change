@@ -38,3 +38,5 @@ Second line - how the program worked
 ```
 
 Yes, it is not ideal, but we are working on the algorithm and training the model
+
+TODO: if you want enter a password, then you will off a change: press Left Alt and Right Alt ...enter a password. Press Ralt and LAlt and  return cofig to back.
