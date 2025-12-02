@@ -12,6 +12,8 @@
 //#include "/usr/include/X11/keysymdef.h"
 #include <stdbool.h>
 
+#include <X11/XKBlib.h>
+
 
 #include "ngram_stats_ru.h"
 #include "ngram_stats_en.h"
@@ -20,6 +22,20 @@
 #define KEYBOARD_DEV "/dev/input/event3"
 #define MAX_NGRAM_LENGTH 4
 
+#define _POSIX_C_SOURCE 199309L 
+
+#include <time.h>
+#include <unistd.h>  // Для usleep, если есть 
+// Если usleep недоступен, определяем свою версию
+#ifndef _XOPEN_SOURCE
+static inline void my_usleep(suseconds_t usec) {
+    struct timespec ts;
+    ts.tv_sec = usec / 1000000;
+    ts.tv_nsec = (usec % 1000000) * 1000;
+    nanosleep(&ts, NULL);
+}
+#define usleep my_usleep
+#endif
 
 #include <gtk/gtk.h>
 #include <libappindicator/app-indicator.h>
@@ -265,9 +281,36 @@ void process_keystroke(int code) {
     ctx.current_prob_ru = get_ngram_probability(ctx.ru_buffer, 1);
 }
 void change_layout(const char *lang) {
-    char cmd[64];
+    /*char cmd[64];
     snprintf(cmd, sizeof(cmd), "setxkbmap %s", lang);
     system(cmd);
+    strcpy(current_layout, lang);
+    */
+    
+    if (!xdisplay) return;
+    
+    XkbDescPtr xkb = XkbGetKeyboard(xdisplay, XkbAllComponentsMask, XkbUseCoreKbd);
+    if (!xkb) return;
+    
+    // Получаем текущую группу
+    XkbStateRec state;
+    XkbGetState(xdisplay, XkbUseCoreKbd, &state);
+    
+    unsigned int new_group;
+    if (strcmp(lang, "ru") == 0) {
+        new_group = 1;  // Вторая раскладка (ru)
+    } else {
+        new_group = 0;  // Первая раскладка (us)
+    }
+    
+    // Меняем группу
+    XkbLockGroup(xdisplay, XkbUseCoreKbd, new_group);
+    
+    // Или альтернативный способ
+    // XkbChangeEnabledControls(xdisplay, XkbGroupLockMask, XkbGroupLockMask);
+    // XkbLockGroup(xdisplay, XkbUseCoreKbd, new_group);
+    
+    XkbFreeKeyboard(xkb, 0, True);
     strcpy(current_layout, lang);
 }
 
@@ -286,6 +329,7 @@ bool is_en(wchar_t ch)
 {
     return (ch >= L'A' && ch <= L'Z') || (ch >= L'a' && ch <= L'z');
 }
+
 
 void send_string(const wchar_t *str) {
     //char mbstr[BUFFER_SIZE * 4];
@@ -491,3 +535,4 @@ int main(int argc, char **argv) {
     
     return 0;
 }
+
