@@ -18,7 +18,11 @@ And set the read beat
 ```
 sudo chmod a+r /dev/input/event*
 ```
-6) Package build: gcc enru_change.c -o enru_change $(pkg-config --cflags --libs gtk+-3.0 appindicator3-0.1) -lX11 -lXtst -lpthread
+6) Package build:
+
+```
+gcc enru_change.c -o enru_change $(pkg-config --cflags --libs gtk+-3.0 appindicator3-0.1) -lX11 -lXtst -lpthread -std=c18
+```
 
 Implemented:
 1) change the layout en\ru
