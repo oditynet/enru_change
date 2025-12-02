@@ -10,15 +10,7 @@ First of all, let's configure X11, or rather keyboard processing:
 python genru3.py book-ru/* > ngram_stats_ru.h
 python genen3.py book-en/* > ngram_stats_en.h
 ```
-4) Manual configuration in the code, replace the address of your keyboard/event4 with yours. You can find the path with the command:
-```
-sudo cat /proc/bus/input/devices | grep -A5 -i "Keyboard"
-```
-And set the read beat
-```
-sudo chmod a+r /dev/input/event*
-```
-6) Package build:
+4) Package build:
 
 ```
 gcc enru_change.c -o enru_change $(pkg-config --cflags --libs gtk+-3.0 appindicator3-0.1) -lX11 -lXtst -lpthread -std=c18
